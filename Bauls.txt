@@ -1,5 +1,0 @@
-4:4
-GameName TimePlayed - - 
-Mario 10:51 3:21 4:38 
-Toad 15:20 0:25 20:18 
-Luigi 7:44 6:32 7:19 
