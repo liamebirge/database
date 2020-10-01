@@ -26,17 +26,61 @@ public class main {
 	public static void main(String[] args) {
 		while (running) {//keeps the program running while user is navigating menus
 			if (imported) {//if user has just imported a database, this menu will be displayed
-				System.out.println("What would you like to do with your database?");
+				System.out.println("\nWhat would you like to do with your database?");
 				System.out.println("1: Edit database");
 				System.out.println("2: Analyze database");
-				System.out.println("3: Exit");
+				System.out.println("3: Save database");
+				System.out.println("4: Exit");
 				System.out.print("What would you like to do?: ");
-				int input1 = Integer.parseInt(scan.nextLine());
+				int input1 = scan.nextInt();
 				if (input1 == 1) {
 					//allow user to edit specific entries in their database as well as expand or shrink the database size
+					boolean editing = true;
+					while (editing) {
+						System.out.println("\nPlease choose an option\n1: Edit entries\n2: Change database size\n3: return");
+						System.out.print("Option: ");
+						int input2 = scan.nextInt();
+						if (input2 == 1) {//edit specific rows
+							System.out.print("\nWhat row would you like to edit?: ");
+							int row = scan.nextInt();
+							System.out.print("\nWhat collumn would you like to edit?: ");
+							int col = scan.nextInt();
+							System.out.println("\nEditing row: " + row + " collumn: " + col);
+							System.out.print("Enter data: ");
+							database[row][col] = scan.next();
+						} else if (input2 == 2) {//change size of database array
+							boolean changingSize = true;
+							while (changingSize) {
+								System.out.print("How many rows would you like?: ");
+								int rows = scan.nextInt();
+								System.out.print("How many collumns would you like?: ");
+								int cols = scan.nextInt();
+								if (rows < database.length || cols < database[0].length) {//confirm user wants less rows or colluns
+									System.out.println("Your new database will be smaller than the original and data will be lost.");
+									System.out.print("Would you like to continue? (y/n): ");
+									String yesNo = scan.next();
+									if (yesNo.contains("n") || yesNo.contains("N")) {
+										break;
+									} else {
+										resizeDatabase(database, rows, cols);
+										break;//return to menu
+									}
+								} else {
+									resizeDatabase(database, rows, cols);
+									break;//return to menu
+								}
+							}
+						} else if (input2 == 3) {//return to previous menu
+							break;
+						} else {
+							System.out.println("Please enter a valid number");
+						}
+					}
 				} else if (input1 == 2) {
 					//perform statistical analysis on the database such as averages, sums, standard deviation, etc.
-				} else if (input1 == 3) {//exit program
+				} else if (input1 == 3) {//save the edited database
+					writeToFile(database.length, database[0].length, database);
+				} else if (input1 == 4) {//exit program
 					System.out.println("Shutting down...");
 					break;
 				} else {
@@ -48,7 +92,7 @@ public class main {
 				System.out.println("2: Load database");
 				System.out.println("3: Exit");
 				System.out.print("What would you like to do?: ");
-				int input1 = Integer.parseInt(scan.nextLine());
+				int input1 = Integer.parseInt(scan.next());
 				if (input1 == 1) {//creating new database
 					System.out.print("How many rows would you like? (start count at 0): ");
 					int x = scan.nextInt();
@@ -57,13 +101,13 @@ public class main {
 					
 					makeDatabase(x, y);
 					System.out.print("What would you like the database to be called?: ");
-					fileName = scan.next() + ".txt";
+					fileName = "TextFiles/" + scan.next() + ".txt";
 					createFile();
 					boolean workingOnDatabase = true;
 					while (workingOnDatabase) {
-						System.out.println("\n1: Add entries to database\n2: Export database");
+						System.out.println("\n1: Add entries to database\n2: Export database\n3: Return to menu");
 						int input2 = scan.nextInt();
-						
+						System.out.println();
 						if (input2 == 1) {//adding entries
 							System.out.print("What row would you like to add to?: ");
 							int row = scan.nextInt();
@@ -84,6 +128,8 @@ public class main {
 							}
 						} else if (input2 == 2) {//export the database to the specified file name
 							writeToFile(x, y, database);
+						} else if (input2 == 3) {
+							break;
 						} else {
 							System.out.println("Please enter a valid number.");
 						}
@@ -94,11 +140,11 @@ public class main {
 						System.out.println();
 						System.out.println();
 						System.out.println("What is the name of the file you wish to import?");
-						System.out.println("(The file must be in the root directory of this program's folder, exclude file type)");
+						System.out.println("(The file must be in the \"TextFiles\" directory of this program's folder, exclude path and file type)");
 						System.out.print("File name: ");
-						fileName = scan.nextLine();
+						fileName = scan.next();
 						System.out.println();
-						ReadFile(fileName);
+						ReadFile("TextFiles/" + fileName + ".txt");
 						break;
 					}
 					
@@ -134,7 +180,7 @@ public class main {
 	public static void writeToFile(int databaseX, int databaseY, String[][] database) {
 		//The whole idea here is to export the data in a form readable by both humans and the computer
 		try {
-			FileWriter myWriter = new FileWriter(fileName);
+			FileWriter myWriter = new FileWriter("TextFiles/" + fileName + ".txt");
 			myWriter.write(databaseX + ":" + databaseY + "\n");//tell the computer how large the array was
 			for (int i = 0; i < database.length; i++) {//print the contents of the array with spaces between entries and line breaks between rows
 				for (int j = 0; j < database[i].length; j++) {
@@ -152,7 +198,7 @@ public class main {
 	public static void ReadFile(String fileName) {
 		//imports specified case sensitive file name and places it in to database 2D array
 		try {
-			File myObj = new File(fileName + ".txt");
+			File myObj = new File(fileName);
 			Scanner myReader = new Scanner(myObj);
 			int line = 0;//keeps track of what row the file reader is on
 			int arrayRow = 0, arrayCol = 0;//stores the array size
@@ -202,6 +248,27 @@ public class main {
 		} catch (FileNotFoundException e) {
 			System.out.println("An error occurred.");
 		e.printStackTrace();
+		}
+	}
+	
+	public static void resizeDatabase(String[][] database, int rows, int cols) {
+		System.out.println("Resizing database...");
+		String[][] databaseTemp = new String[rows][cols];//create temporary array with desired size
+		for (int i = 0; i < databaseTemp.length; i++) {
+			for (int j = 0; j < databaseTemp[i].length; j++) {
+				if (i < database.length && j < database[0].length) {//ensure that only the data from the previous database is added
+					databaseTemp[i][j] = database[i][j];//add database's contents to temp array
+				} else continue;
+			}
+		}
+		database = databaseTemp;//update global database variable
+		//print array for user to observe data has been entered correctly
+		System.out.println();
+		for (int i = 0; i < database.length; i++) {
+			for (int j = 0; j < database[i].length; j++) {
+				System.out.print(database[i][j] + " ");
+			}
+			System.out.println();
 		}
 	}
 }
